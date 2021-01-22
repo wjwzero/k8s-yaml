@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jmeter
+spec:
+  template:
+    metadata:
+      name: jmeter
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: jmeter
+        image: dustise/jmeter-server
+        command:
+          - "/jmeter/bin/jmeter"
+          - "-n"
+          - "-t"
+          - "/jmeter/input/jd.jmx"
+          - "-l"
+          - "/jmeter/output/log"
+          - "-j"
+          - "/jmeter/output/joker"
+          - '-R'
+          - 'jnode-0.jfarm:1099,jnode-1.jfarm:1099,jnode-2.jfarm:1099,jnode-3.jfarm:1099'		  
+        volumeMounts:
+          - name: data
+            mountPath: /jmeter/output
+            subPath: output
+          - name: vol-161122370728077584
+            readOnly: true
+            mountPath: /jmeter/input
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: cce-sfs-k8k49avu-fdou
+        - name: vol-161122370728077584
+          configMap:
+            name: jmeter
+            items:
+              - key: jd.jmx
+                path: jd.jmx
+            defaultMode: 420
